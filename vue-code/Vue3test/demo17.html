@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+    <div id = "app"></div>
+</body>
+
+<script>
+    const app = Vue.createApp({ 
+        data(){
+            return{
+                listArray:['谢大脚','刘英','小红'],
+                listObject:{
+                    GirlOne:'谢大脚',
+                    Girltwo:'刘英',
+                    GirlThree:'小红'
+                    }
+                }
+           
+        },
+        methods:{
+            handleChangeBtnClick(){
+                this.listArray.push('lk.com')
+            }
+        },
+        template:`
+            <ul>
+                <li
+                    v-for="(item,index) in listArray"
+                    :key="index + item"
+                >
+                    [{{index}}]{{item}}
+                </li>
+            </ul>    
+            <button @click="handleChangeBtnClick">点击改变 </button>   
+
+            <ul>
+                <li
+                    v-for="(value,key,index) in listObject"
+                    :key="key"
+                >
+                    [{{index}}]{{key}}:{{value}}
+                </li>
+            </ul>  
+             
+        ` 
+    }) //创建一个Vue实例
+
+    const vm = app.mount("#app")
+    
+</script>
+
+</html>

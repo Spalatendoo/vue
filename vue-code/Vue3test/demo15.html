@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+    <div id = "app"></div>
+</body>
+
+<script>
+    const app = Vue.createApp({ 
+        data(){
+            return{
+                classString:'red',
+                classObject:{red:false,background:true},
+                classArray:['green','background',{red:true}],
+                styleObject:{
+                    color:'red',
+                    background:'yellow'
+                }
+            }
+        },
+        template:`
+            <h2 :style="styleObject">lk.com</h2>
+            <sonCom class="red"/>
+
+        ` 
+    }) //创建一个Vue实例
+    app.component('sonCom',{
+        template:`
+            <div>
+                <div >SonCom</div>
+                <div >lk</div>
+            </div>
+        `
+    })
+    const vm = app.mount("#app")
+    
+</script>
+<style>
+    .red{color: red !important;}
+    .green{color: green;}
+    .background{background-color: chocolate;}
+</style>
+</html>

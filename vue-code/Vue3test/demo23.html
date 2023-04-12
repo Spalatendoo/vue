@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo23</title>
+    <script src="https://unpkg.com/vue@next"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                checked: true,
+                name:'未选中任何内容',
+                message:''
+            }
+        },
+        // lazy number trim
+        template: `
+            <div>{{checked}}<input type="checkbox" v-model="checked" /></div>
+            <div>
+                {{name}}
+                <input
+                    type="checkbox"
+                    v-model = "name"
+                    true-value="lik.com"
+                    false-value="李坤"
+                />
+            </div>
+            <div>
+                {{message}}
+                <input v-model.lazy="message">
+            </div>
+            <div>
+                {{message}}
+                <input v-model.trim="message">
+            </div>
+        `
+
+    })
+    const vm = app.mount("#app")
+
+</script>
+
+</html>

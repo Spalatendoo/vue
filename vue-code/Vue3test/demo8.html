@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+    <div id = "app"></div>
+</body>
+
+<script>
+    const app = Vue.createApp({ 
+        data(){
+            return{
+                message:'lk.com' ,
+                count :5
+            }
+        },
+        methods:{
+            handleItemClick(){
+                this.message = this.message == 'lk.com'?'里鸡':'lk.com'
+            }
+        },
+
+
+        template:`
+
+                  <h2 
+                  v-on:click="handleItemClick"
+                  v-html="message"
+                  v-once
+                  v-bind:title = "message"
+
+                  ></h2>
+        ` 
+    }) //创建一个Vue实例
+    const vm = app.mount("#app")
+    
+</script>
+</html>
