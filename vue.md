@@ -1701,7 +1701,7 @@ methods:{
 
 这里需要注意的是，调用方法时候，要加上 `()`，方法之间 `,`隔开。如果不加调用时无效的
 
-#### 时间修饰符
+#### 事件修饰符
 
 绑定事件中的修饰符有很多种，如`stop` `prevent` `capture` `self` `once` `passive`
 
@@ -2013,3 +2013,1434 @@ vue提供了 `true-value` 和 `false-value` 两个属性，在data中声明一�
 
 
 ## 组件
+
+![image-20230413143526021](vue.assets/image-20230413143526021.png)
+
+Vue中的组件是页面的一部分，通过层层拼装，最终形成了一个完整组件。
+
+
+
+### 根组件
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>
+```
+
+用`createApp( )`创建Vue的实例，然后用`mount( )`方法挂载到`DOM`节点上
+
+![image-20230413153336916](vue.assets/image-20230413153336916.png)
+
+
+
+这里的 `Vue.createApp` 实际就是建立一个Vue实例，就是第一个 `根组件`，可以通过对象属性的形式来定义根组件的具体样式和放过发，比如在根组件上定义一个模板
+
+```html
+const app=Vue.createApp({
+    template:`<h2>lk.com</h2>`
+})
+```
+
+再加上一行字，
+
+```html
+const app=Vue.createApp({
+    template:`
+    	<h2>lk.com</h2>
+    	<div>李坤</div>
+    `
+})
+```
+
+### 全局组件
+
+页面由两串文字组成，即两部分，可以将这两部分拆分成两个全局的子组件
+
+```html
+<script>
+    const app = Vue.createApp({
+        template:`
+            <website />
+            <describe />
+
+        `
+        
+    })
+
+    app.component('website',{
+        template:`<h2>lk.com</h2>`
+    })
+    app.component('describe',{
+        template:`<div>李坤</div>`
+    })
+
+    const vm = app.mount("#app")
+</script>
+```
+
+现在页面上元素，就被拆分了，一个根组件下面有两个子组件。这里我们并没有什么业务逻辑，所以看起来还没有太多的作用，但是如果一旦业务逻辑复杂，我们这样拆分，会降低开发难度。
+
+
+
+#### 组件的可复用性
+
+```html
+<script>
+    const app=Vue.createApp({
+
+        template:
+        `
+            <website />
+            <describe />
+            <count />
+                <count />
+                <count />
+
+        `
+    })
+    app.component('website',{
+        template:`<h2>lk.com</h2>`
+    })
+    app.component('describe',{
+        template:`<div>李坤</div>`
+    })
+    app.component('count',{
+        data(){
+            return{
+                count:0
+            }
+        },
+        template:`
+            <div>{{count}} <button @click="count++">增加1</button></div>
+        `
+    })
+
+    const vm=app.mount("#app")
+</script>
+```
+
+![image-20230413154534766](vue.assets/image-20230413154534766.png)
+
+![image-20230413154548205](vue.assets/image-20230413154548205.png)
+
+浏览页面发现  `count` 组件的调用是互不干扰的，因此，Vue中的组件也就具有了复用性
+
+
+
+#### 全局组件的弊端
+
+全局组件编写起来确实非常方便，当时全局组件就是你一旦定义了，就会占用系统资源。它是一直存在的，你在任何地方都可以使用这个全局组件。这势必会对性能产生影响，比如一个真实的项目，会有上千个组件，这些组件由不同人编写，如果全部是全局组件，那这个应用打开速度一定是极慢的，而且流畅度也会受到影响
+
+
+
+**只要定义了，处处可以使用，性能不高，使用起来简单**
+
+
+
+
+
+### 局部组件
+
+可以把局部组件看成一个变量，然后在使用的地方注册这个组件，才可以使用。局部组件的最大好处就是只有在使用的时候，才会耗费系统资源，不像全局组件一样，一直都存在
+
++ 创建一个局部组件
+
+```html
+    const counter = {
+        data(){
+            return{
+                count:0
+            }
+        },
+        template:`
+            <div>{{count}} <button @click="count++">增加1</button></div>
+        `
+    }
+```
+
+理解成创建一个变量，最外层使用花括号，里面和使用 `vue.createApp` 时传递的参数是一样的
+
+需要在`vue.createApp`方法里进行注册才能使用
+
+
+
++ 注册局部组件
+
+直接用`components`属性声明就OK
+
+![image-20230413161639713](vue.assets/image-20230413161639713.png)
+
+
+
+有时候我们的组件名字会比较长，比如写一个`xieDaJiao`组件。
+
+![image-20230413161850220](vue.assets/image-20230413161850220.png)
+
+现在变量的名字有大小写，这时候在组测组件时，要使用这种形式（用`-`切割单词）。
+
+![image-20230413161906852](vue.assets/image-20230413161906852.png)
+
+产生这种问题是因为一个矛盾点，就是变量中不能使用`-`,而组件调用确实可以的。所以为了区分组件，在定义局部组件的时候，潜规则是首进行大写，然后使用驼峰命名法。
+
+
+
+
+
+### 父子组件的静态和动态传值
+
+```html
+<script>
+    const app = Vue.createApp({
+        template:`
+            <h2>lk.com</h2>
+            <Son />
+        
+        `
+        
+    })
+
+    app.component('Son',{
+        template:`<div>Son</div>`
+    })
+
+    const vm= app.mount("#app")
+</script>
+```
+
+声明一个全局组件，浏览显示正常，此时就已经形成了父子组件关系
+
+#### 父组件向子组件传值（静态）
+
+子组件中的`Son`是写死的，如果想动态的从父组件传递，可以使用属性方式，然后子组件使用props进行接受
+
+比如，
+
+在调用子组件的地方，通过属性`name`传递一个`李坤`的文字进去。
+
+传递后 用`props`在子组件中进行接收，然后用插值表达式的形式打印出来
+
+![image-20230413163128553](vue.assets/image-20230413163128553.png)
+
+这样就实现了参数的接收和显示
+
+
+
+#### 动态数据作为参数
+
+动态参数传递首先要把传递参数放到Vue的数据项中，即`data`属性里
+
+例如在`data`中声明一个name属性，然后赋值为`李坤`。这时候需要在`template`中绑定这个name属性。这样你的值就不是静态的了，而是动态值。
+
+![image-20230413163839611](vue.assets/image-20230413163839611.png)
+
+
+
+==ps==静态参数传递只能是字符串类型，而动态传参就可以是多种类型，甚至是一个函数/方法
+
+
+
+`静态传参传“123”是String类型，动态传参“123”变成了数字类型`
+
+==参数为函数时==
+
+编写一个全局子组件
+
+```html
+app.component('XiaoJieJie',{
+        props:['pay'],
+        methods:{
+            handleClick(){
+                alert('请付钱...')
+                this.pay()
+            }
+        },
+
+        template:`
+            <div @click="this.handleClick">和小姐姐 打招呼！</div>
+        `
+    })
+```
+
+父组件调用时候， `pay`是一个定义在data中的函数，然后用动态参数的形式调用
+
+
+
+```html
+const app = Vue.createApp({
+        data(){
+            return{
+                name:'李坤',
+                pay:()=>{
+                    alert('给你500块')
+                }
+            }
+        },
+        template:`
+            <h2>lk.com</h2>
+            <Son :name="name"/>
+            <xiao-jie-jie :pay="pay"/>
+        
+        `
+        
+    })
+```
+
+
+
+#### 组件传值的校验操作
+
+不同于前端验证，组件中也需要基本的验证
+
+##### 对类型的校验
+
+传递数据项中的`123`
+
+在传递的参数声明属性
+
+```html
+app.component('Son', {
+        props: {
+            name: String
+        },
+        template: `<div>{{name}} div </div>`
+    })
+```
+
+可以通过打开控制台 `console`就可以看到提示，即使传递类型不是Strin，也会正常显示，`console`中提示warning，这种报错不会阻断程序
+
+这时把数据项中`123`修改为字符串，程序就不会报错了
+
+Vue支持的校验类型包括:**String、Boolean、Array、Object、Function和Symbol**
+
+
+
+##### 必填校验和默认值
+
+`required`实现校验
+
+```html
+app.component('Son', {
+        props: {
+            name: {
+                type: String,
+                required: true
+            }
+        },
+        template: `<div>{{name}} div </div>`
+    })
+```
+
+校验规则就是，name的值必须是字符串，并且不可以省略。这时候可以去掉父组件调用时传递的参数，在浏览器中打开控制台看一下警告信息。
+
+`default默认值`
+
+```html
+app.component('Son', {
+        props: {
+            name: {
+                type: String,
+                default: 'likun'
+            }
+        },
+        template: `<div>{{name}} div </div>`
+    })
+```
+
+在调用组件时，如果不传递参数，则默认值为`likun`。
+
+##### 精准校验
+
+`validator`
+
+进行精准校验。比如现在要求传递的字符串中必须包括`li`这几个字符，就可以用`validator`来进行校验。它是一个函数，并接受一个`value`值，这个value就是传递过来的值。
+
+```
+app.component('Son', {
+    props: {
+        name: {
+            type: String,
+            validator: function (value) {
+                console.log(value.search("JSPang"))
+                return value.search("li") != -1
+            },
+            default: 'likun'
+        }
+    },
+    template: `<div>{{name}} div </div>`
+})
+```
+
+因为使用`search`来验证，返回来的是字符串出现的位置，没有找到时才显示`-1`。所以这里判定如果不为`-1`就是通过验证。
+
+当没有通过验证时，就是在控制台给出警告。
+
+
+
+#### 单项数据流机制
+
+保证组件独立性
+
+
+
+==单向数据流==：所有的prop都使得其父子prop之间形成了一个单向下行绑定：父级prop的更新会向下流动到子组件中，但是反过来则不行
+
+简单的说：**数据从父级组件传递给子组件，只能单向绑定。子组件内部不能直接修改从父组件传递过来的数据**
+
+
+
+```html
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                counter:0
+
+            }
+        },
+        template: `
+            <h2>lk.com</h2>
+            <counter :counter="counter"/>
+        `
+    })
+    app.component(`Counter`,{
+        props:['counter'],
+        template:`
+            {{counter}}<button @click="counter+=1">增加数量</button>
+        `
+    })
+
+    const vm = app.mount("#app")
+</script>
+```
+
+编写了一个全局组件，接受一个参数“counter”
+
+在浏览器中预览的时候，你会发现点击按钮根本不起作用。这就是单向数据流机制限制的结果
+
+
+
+如何修改这个程序，让其好用那，方法很简单，在组件内的数据项中声明一个变量，把父组件传递过来的变量赋值给内部变量，然后就可以随意修改了
+
+```html
+app.component('Counter', {
+    props: ['counter'],
+    data() {
+        return {
+            newCounter: this.counter
+        }
+    },
+    template: `
+        {{newCounter}}<button @click="this.newCounter+=1">增加数量</button>
+    `
+})
+```
+
+**单向数据流就是父组件可以向子组件传递数据，但是子组件不能修改数据。**
+
+
+
+单项数据流的最终目的，就是为了降低组件的耦合度和独立性。比如现在页面上同时调用了三个`<counter/>`组件，没有单项数据流的机制，很容易变成一个组件数值变化，其他组件的数值也跟着变化的现象。让页面组件的数据耦合在一起，没办法独立使用。
+
+```
+template: `
+    <h2>lk.com</h2>
+    <counter :counter="counter"/>
+    <counter :counter="counter"/>
+    <counter :counter="counter"/>
+`
+```
+
+
+
+#### Non-props
+
+`Non-props`属性，其实就是子组件没有接受父组件传递过来的参数，而子组件完全不变的复制了属性到自己的标签上，就叫做`Non-props`属性
+
+```html
+<script>
+    const app = Vue.createApp({
+        template: `
+            <h2>lk.com/h2>
+            <Hello />
+            
+        `
+    })
+    app.component(`Hello`,{
+        template:`<h3>Hello World</h3>`
+    })
+    const vm = app.mount("#app")
+</script>
+```
+
+上段代码，没有在子组件里接受任何传递过来的参数，就根本没有写`props`,但这时候在调用的时候，是仍然可以传值的。
+
+```html
+const app = Vue.createApp({
+    template: `
+    <h2>lk.com</h2>
+    <hello msg="lkun" />
+`
+})
+```
+
+打开浏览器中的控制台，查看`Elements`标签，可以看到此时的`<h3>`标签上已经由了`msg=lkun`这样的属性，也就是父组件直接把属性移植给了子属性。
+
+![image-20230418112403336](vue.assets/image-20230418112403336.png)
+
+如果要消除 这种移植，或者是复制，可以在子组件里接受这个属性，但并不使用他。
+
+```html
+app.component('Hello', {
+     props: ['msg'],
+     template: `<h3>Hello World</h3>`
+ })
+```
+
+![image-20230418112532541](vue.assets/image-20230418112532541.png)
+
+这时候在打开浏览器的`Elements`标签查看，就没有多余的属性了。
+
+
+
+`Non-prop`属性，它就是父组件向子组件传递参数的时候，子组件不写任何的接受方法。这个时候父组件就会直接把属性完全复制给子组件，子组件也是可以得到属性值的。
+
+------
+
+最常见的使用案例就是直接在标签上写CSS样式。
+
+
+
+```html
+const app = Vue.createApp({
+    template: `
+        <h2>JSPang.com</h2>
+        <hello style="color:red;" />
+    `
+})
+```
+
+子组件会直接得到这个属性，也就把字体变成了红色。
+
+
+
+##### inheritAttrs 属性
+
+有些时候我们就是不想接受参数，也不想让`Non-props`属性起作用，这时候可以在子组件上使用`inheritAttrs`属性来解决这个问题。
+
+```html
+app.component('Hello', {
+    inheritAttrs: false,
+    template: `<h3>Hello World</h3>`
+})
+```
+
+这时候style标签就不会再被复制到子组件上了，组件上的`Hello World`也不会变成红色了。
+
+##### non-prop 多节点失效解决方法
+
+组件在没有接受参数时，会把属性自动复制到组件的根节点上，如果组件不是一个根节点，比如写成下面的样子。
+
+```html
+app.component('Hello', {
+    template: `
+        <h3>Hello World</h3>
+        <h3>Hello World</h3>
+        <h3>Hello World</h3>
+    `
+})
+```
+
+这时候复制就会失效。你当然可以给他们增加一个根节点，但是在不增加根节点的条件下，也是有办法解决的。比如现在我们想让第一个组件中的`<h3>`标签复制父组件传递过来的属性，就可以写成下面的样子。
+
+```html
+    app.component(`Hello`,{
+        
+        template:`
+            <h3 v-bind="$attrs">Hello World</h3>
+            <h3>Hello World</h3>
+            <h3>Hello World</h3>
+        `
+    })
+```
+
+测试的`$attrs`不是单指某一个属性，而是指全部属性。当然这里只有一个属性，所以只复制了一个，比如你再写一个属性，它也是可以复制过来的。
+
+```html
+const app = Vue.createApp({
+    template: `
+    <h2>JSPang.com</h2>
+    <hello style="color:red;" msg="jspang" />
+`
+})
+```
+
+打开浏览器，会看到两个属性都复制到了第一个`<h3>`标签上。
+
+![image-20230418161843549](vue.assets/image-20230418161843549.png)
+
+这点需要注意一下，`v-bind="$attrs"`的意思是把父组件传递的所有参数属性都复制到子组件当中。
+
+如果想只复制一个属性，比如现在我们只复制一个属性`style`，就这么写。
+
+```html
+app.component('Hello', {
+    template: `
+        <h3 v-bind="$attrs">Hello World</h3>
+        <h3 v-bind:style="$attrs.style">Hello World</h3>
+        <h3>Hello World</h3>
+    `
+})
+```
+
+第二个`<h3>`标签就只复制了`style`属性。当然你也可以简写，去掉`v-bind`，而是用`:`代表
+
+
+
+![image-20230418162352129](vue.assets/image-20230418162352129.png)
+
+##### 在业务逻辑中使用Non-props属性
+
+如果想在业务逻辑中使用`Non-props`属性也是可以的。比如在生命周期中使用。
+
+```html
+app.component('Hello', {
+    mounted() {
+        console.log(this.$attrs.msg)
+    },
+    template: `
+    <h3 v-bind="$attrs">Hello World</h3>
+    <h3 v-bind:style="$attrs.style">Hello World</h3>
+    <h3>Hello World</h3>
+    `
+})
+```
+
+到浏览器中的控制台进行查看，就可以看到打印出了`lkun`字样。其实`this.$attrs`是Vue的一个常用属性，需要善于利用。
+
+
+
+#### 组件中通过事件进行通信
+
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo07</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.0.2/vue.global.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                counter: 0
+            }
+        },
+        template: `
+                    <h2>JSPang.com</h2>
+                    <counter :counter="counter"/>  
+             `
+    })
+    app.component('Counter', {
+        props: ['counter'],
+        template: `
+        {{counter}}<button @click="this.counter+=1">增加数量</button>
+    `
+    })
+
+    const vm = app.mount("#app")
+</script>
+
+</html>
+```
+
+上面的代码，当我们在浏览器中点击增加时，是不能增加`counter`的值的，这就是Vue`单向数据流`的限制。但是有时候，我们就是想在子组件里改变父组件传递过来的值，怎么办？
+
+
+
+##### 子组件调用父组件事件
+
+这时候就需要子组件调用父组件的事件，从而改变父组件里的值。我们先在父组件里编写一个方法，叫做`handleAddCounter`。这个方法就作一件事，每执行一次，数据项里的`counter`加一。
+
+```html
+methods: {
+    handleAddCounter() {
+        this.counter += 1
+    }
+},
+```
+
+父组件有了这个方法，就可以改变`couter`数据行的值了，有方法后，现在问题就变成了，如何在子组件中调用这个方法了。
+
+
+
+这时候可以先在`子组件`的模板`template`中编写一个`click`事件。
+
+![image-20230418164003887](vue.assets/image-20230418164003887.png)
+
+子组件调用的并不是父组件中的方法，而是子组件中的方法。如果想调用父组件中的`handleAddConter`方法，这时候可以在子组件中新建一个方法`handleClick`，然后用`$emit`调用父组件的响应事件`add`。具体代码如下.
+
+```html
+app.component('Counter', {
+    props: ['counter'],
+    emits: ['add'],
+    methods: {
+        handleClick() {
+            this.$emit('add')
+        }
+    },
+    template: `
+    {{counter}}<button @click="handleClick">增加数量</button>
+`
+})
+```
+
+
+
+这时候的`add`是什么？`add`就是响应事件，在父组件的模板`template`中，添加一个`add`响应事件，然后响应事件再调用方法`handleAdCounter`。
+
+
+
+父组件的模板：
+
+```html
+template: `
+                    <h2>lk.com</h2>
+                    <counter :counter="counter" @add="handleAddCounter" />  
+             `
+```
+
+
+
+整段代码
+
+```html
+<script>
+    const app = Vue.createApp({
+
+        data() {
+            return {
+                counter: 0
+            }
+        },
+        methods:{
+            handleAddCounter(){
+                this.counter += 1
+            }
+        },
+        template: `
+                    <h2>lk.com</h2>
+                    <counter :counter="counter" @add="handleAddCounter" />  
+             `
+    })
+    app.component('Counter', {
+        props: ['counter'],
+        emits:['add'],
+        methods:{
+            handleClick(){
+                this.$emit('add')
+            }
+        },
+        template: `
+        {{counter}}<button @click="handleClick">增加数量</button>
+    `
+    })
+
+    const vm = app.mount("#app")
+</script>
+```
+
+
+
+
+
+##### 子组件向父组件传递参数
+
+当我们不是每次想加1的时候，比如这个值是`子组件`决定的，比如是`2`吧。这时候子组件需要向父组件传值，也是可以做到的。你可以在子组件中这样编写。
+
+```html
+methods: {
+    handleClick() {
+        this.$emit('add', 2)
+    }
+},
+```
+
+在父组件中接受这个参数`param` (这个参数的名字你可以随便起)，为了看的方便，在控制台进行打印。
+
+```html
+methods: {
+    handleAddCounter(param) {
+        console.log(param)
+        this.counter += param
+    }
+},
+```
+
+这时候子组件的参数就传递给了父组件，并且可以使用了。当然你还有**更好的选择**，就是把所有业务逻辑都放在子组件中，然后把结果传递给父组件。比如代码可以写成下面的样子。 业务逻辑写在子组件里
+
+```html
+methods: {
+    handleClick() {
+        this.$emit('add', this.counter + 3)
+    }
+},
+```
+
+父组件直接接受结果
+
+```html
+methods: {
+    handleAddCounter(param) {
+        console.log(param)
+        this.counter = param
+    }
+},
+```
+
+##### 对传递值得校验
+
+在子组件向父组件传递值的时候，还可以开启校验功能。校验是通过`emits`这个选项来声明的。比如现在我们要求传递到add中的值，不大于20。如果大于20就进行警告。
+
+```html
+emits: {
+    add: (value) => {
+        return value < 20 ? true : false
+    }
+},
+```
+
+
+
+#### 组件中插槽的使用Slot
+
+插槽的声明很简单，只要在子组件中加入`<slot></slot>`标签即可，然后在父组件中使用双标签进行调用
+
+```html
+<script>
+    const app = Vue.createApp({
+        template: `
+        <h2>欢迎光临红浪漫-请选择您的技师</h2>
+        <ji-shi > 谢大脚 </ji-shi>
+        `
+    })
+
+    app.component('JiShi', {
+        template: `
+        <div>
+            <span>经过你的慎重考虑.最终选择了。</span>
+            <span>
+                <slot> </slot>
+
+            </span>
+        </div>
+    `
+    })
+
+    const vm = app.mount("#app")
+</script>
+```
+
+这时候去浏览器可以看到，页面出现了我们想要的结果。你可以让页面更丰富，因为插槽支持任何的DOM元素，比如我们加入一个`<div>`然后让字体变成红色和50像素的字体大小。
+
+![image-20230418170638597](vue.assets/image-20230418170638597.png)
+
+现在调用两次`<ji-shi>`组件，给与不同的样式也是可以的。
+
+![image-20230418170704021](vue.assets/image-20230418170704021.png)
+
+##### 插槽中使用子组件
+
+插槽可以强大到直接使用`子组件`，接下来就作一个在插槽中使用子组件的小例子。可以先声明一个最简单的子组件。这个子组件叫做`project`
+
+```html
+app.component('project', {
+        template: `<span style="color:blue;">项目是胖哥老三样</span>`
+    })
+```
+
+有了组件后直接可以在父组件的插槽中进行使用，代码如下
+
+```html
+        <ji-shi > 
+                <div style="color:red;font-size:50px;">
+                    谢大脚，<project />
+                </div>
+        </ji-shi>
+```
+
+
+
+
+
+##### 插槽中使用动态数据
+
+插槽中也可以直接使用动态数据，也就是我们常说的数据项，比如定义一个数据项,然后在插槽中使用，直接就可以使用了。
+
+```html
+const app = Vue.createApp({
+    data() {
+        return {
+            jishi: '晓红'
+        }
+    },
+    template: `
+        <h2>欢迎光临红浪漫-请选择您的技师</h2>
+        <ji-shi > 
+                <div style="color:red;font-size:50px;">
+                    {{jishi}},<project />
+                </div>
+        </ji-shi>
+        <ji-shi > <div style="color:green;font-size:50px;">刘英</div> </ji-shi>
+    `
+})
+```
+
+这时候需要注意的是一个变量作用域的问题，比如我们子组件里也有一个数据项`jishi`，然后给他赋值为`谢大脚`。
+
+```html
+app.component('JiShi', {
+    data() {
+        return {
+            jishi: '谢大脚'
+        }
+    },
+    template: `
+    <div>
+        <span>经过你的慎重考虑.最终选择了。</span>
+        <span>
+            <slot> </slot>
+
+        </span>
+    </div>
+`
+})
+```
+
+会发现，浏览器中仍然显示的是`晓红`，这时候我们得出了一个结论，也是方便你记忆。
+
++ 父模板里调用的数据属性，使用的都是父模板里的数据
++ 子模版里调用的数据属性，使用的都是子模版里 的数据
+
+
+
+##### 默认插槽的使用
+
+编写一个全局的组件 `JiShi`
+
+```html
+app.component('JiShi',{
+        template:`
+            <div>
+                你选择了<slot></slot>为你服务。
+            </div>
+        `
+    })	
+```
+
+有了插槽后就可以在使用组件的时候直接传递值了。
+
+![image-20230418172057418](vue.assets/image-20230418172057418.png)
+
+现在来了一位新客人，第一次来，不好意思点技师，那我们就需要给他一个默认值，比如默认值是“晓红”。默认值的关键语法就是在`<slot>`插槽中直接输入值就可以了。
+
+![image-20230418172112695](vue.assets/image-20230418172112695.png)
+
+这种编写方法，在有值传递过来的时候，会显示正常的值，没有值的时候就会显示默认值"晓红"。
+
+![image-20230418172126698](vue.assets/image-20230418172126698.png)
+
+
+
+访问结果：
+
+![image-20230418172142857](vue.assets/image-20230418172142857.png)
+
+
+
+##### 具名插槽的使用
+
+来看一个需求，就是如果你去洗脚城，需要经历三个过程：给顾客安排位置、选择技师、选择项目。
+
+这是一个过程，是有先后顺序的，包括在页面上的显示也是要有顺序的。于是我们写了一个组件。组件代码如下。
+
+```html
+app.component('HongLangMan',{
+        template:`
+            <div>
+                 <div>1.男宾一位，请上二楼。</div>
+                 <div>2.你选择了大脚为你服务</div>
+                 <div>3.你点了198元泰式按摩</div>
+            </div>
+        `
+    })
+```
+
+程序编写的需求是这样的，选择谁为你服务不变，也就是第二个div中的内容不变。但是第一句和第三句要能在父组件里使用插槽的方法进行定义。你这时会发现程序有问题了，要把`<slot>`放在哪里？好像放在什么地方都不太合适，我们索性放两个`<slot>`，一个放在上面，一个放在下面，测试一下。
+
+```html
+app.component('HongLangMan',{
+    template:`
+        <div>
+                <slot></slot>
+                <div>2.你选择了大脚为你服务</div>
+                <slot></slot>
+        </div>
+    `
+})
+```
+
+在父组件调用的时候传递对应的值，比如把代码写成下面的样子。
+
+```html
+const app = Vue.createApp({
+    template: ` 
+        <h2>欢迎光临红浪漫-请选择您的技师</h2>
+        <hong-lang-man>
+            <div>1.女宾一位，请上三楼。</div>
+            <div>3.顾客选择了全身SPA。</div>
+        </hong-lang-man>
+    `
+})
+```
+
+打开浏览器，会发现插槽的位置出现了两次重复的内容。也表示我们第一次的尝试失败了。
+
+Vue中已经提供了具名插槽的使用方法，就是给`<slot>`标签加上一个name属性，你可以把子组件写成下面的样子。
+
+```html
+app.component('HongLangMan',{
+    template:`
+        <div>
+                <slot name="one"></slot>
+                <div>2.你选择了大脚为你服务</div>
+                <slot name="two"></slot>
+        </div>
+    `
+})
+```
+
+父组件可以用下面的方式进行调用。
+
+```html
+const app = Vue.createApp({
+    template: ` 
+        <h2>欢迎光临红浪漫-请选择您的技师</h2>
+        <hong-lang-man>
+            <template v-slot:one><div>1.女宾一位，请上三楼。</div></template>
+            <template v-slot:two><div>3.顾客选择了全身SPA。</div></template>
+        </hong-lang-man>
+    `
+})
+```
+
+现在就可以在一个组件里，分别定义两个插槽了。
+
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo09</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.0.2/vue.global.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    const app = Vue.createApp({
+        template: ` 
+            <h2>欢迎光临红浪漫-请选择您的技师</h2>
+            <hong-lang-man>
+            <template v-slot:one><div>1.女宾一位，请上三楼。</div></template>
+            <template v-slot:two><div>3.顾客选择了全身SPA。</div></template>
+            </hong-lang-man>
+        `
+    })
+    app.component('HongLangMan',{
+    template:`
+        <div>
+                <slot name="one"></slot>
+                <div>2.你选择了大脚为你服务</div>
+                <slot name="two"></slot>
+        </div>
+    `
+})
+    const vm = app.mount("#app")
+</script>
+```
+
+
+
+
+
+##### 具名插槽简写和作用域插槽
+
+
+
+在父模板中确定插槽位置时，使用了`v-slot:one`这种方法，其实这个语法可以简写成`#one`。这时候的代码就变成了下面的样子。
+
+```html
+const app = Vue.createApp({
+    template: ` 
+    <h2>欢迎光临红浪漫-请选择您的技师</h2>
+    <hong-lang-man>
+        <template v-slot:one><div>1.女宾一位，请上三楼。</div></template>
+        <template v-slot:two><div>3.顾客选择了全身SPA。</div></template>
+    </hong-lang-man>
+`
+})
+```
+
+
+
+**作用域插槽**
+
+```html
+<script>
+    const app = Vue.createApp({
+        template: `  
+            <h2>欢迎光临红浪漫-请选择您的技师</h2>
+            <list />
+        `
+    })
+    app.component('List', {
+        data() {
+            return {
+                list: ['大脚', '刘英', '晓红']
+            }
+        },
+        template: `
+            <div>
+                <div v-for="item in list">{{item}}</div>    
+            </div>
+        `
+    })
+
+    const vm = app.mount("#app")
+</script>
+```
+
+编写了一个`list`子组件，然后在list组件里，声明一个list的数据，`v-for`形式循环遍历出来
+
+目前子组件里循环使用的是`<div>`标签，现在要求这个标签是父组件调用时确定，也就是要使用插槽了。
+
+
+
+先改造子组件，增加`slot`插槽，增加插槽后的模板代码如下。
+
+![image-20230418193532101](vue.assets/image-20230418193532101.png)
+
+然后在父组件里进行调用，调用方法如下。
+
+![image-20230418193545624](vue.assets/image-20230418193545624.png)
+
+
+
+浏览器中查看，打开控制台，可以看到DOM中，是有三个`<span>`标签的。说明`DOM`通过插槽的形式，传递过来了。那接下来的问题，就是父组件如何使用子组件中的变量。
+
+父组件想使用子组件插槽中的值，可以使用`:`绑定的形式进行传递，比如写成`:item="item"`，具体的代码可以写成下面的样子。
+
+![image-20230418193609953](vue.assets/image-20230418193609953.png)
+
+这时候你会发现列表是可以正常显示的，也可以进行更换标签了，可以试着把`<span>`标签换成`<div>`标签来尝试一下
+
+注意这里的`props`是子组件传递过来的数据都是对象，所以我们要加上`.item`才能使用。可以把代码修改一下。
+
+![image-20230418193646036](vue.assets/image-20230418193646036.png)
+
+![image-20230418193710440](vue.assets/image-20230418193710440.png)
+
+==作用域插槽简化写法==
+
+通过解构的形式，是ES6的一种写法，可以去另外学一下ES6关于解构的语法知识
+
+
+
+![image-20230418194030084](vue.assets/image-20230418194030084.png)
+
+
+
+
+
+#### 动态组件和状态保存
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo11</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.0.2/vue.global.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    const app = Vue.createApp({
+        template: ` 
+            <h2>欢迎光临红浪漫-请选择您的技师</h2> 
+        `
+    })
+
+    const vm = app.mount("#app")
+</script>
+```
+
+编写两个组件，引入两张图片
+
+```html
+app.component('dajiao',{
+    template:`<img src="https://newimg.jspang.com/xiedajiao01.jpg" />`
+})
+
+app.component('liuying',{
+    template:`<img src="https://newimg.jspang.com/liuying01.jpg" />`
+})
+```
+
+父组件中直接使用这两个组件
+
+```html
+const app = Vue.createApp({
+    template: ` 
+        <h2>欢迎光临红浪漫-请选择您的技师</h2> 
+        <dajiao />
+        <liuying />
+    `
+})
+```
+
+现在的需求是如果显示其中一个组件，另一个组件就不显示。这里我最先想到的是用`v-show`这种代码来实现。
+
+先来定义一个数据项，用来控制显示那个组件，数据项叫做`showItem`，然后在两个子组件的位置增加v-show属性，控制最终的显示。
+
+```html
+const app = Vue.createApp({
+    data(){
+        return {showItem:'dajiao'}
+    },
+    template: ` 
+        <h2>欢迎光临红浪漫-请选择您的技师</h2> 
+        <dajiao  v-show="showItem==='dajiao'" />
+        <liuying v-show="showItem==='liuying'" />
+    `
+})
+```
+
+时候的`showItem`值是`dajiao`，所以浏览器中应该只显示`dajiao`的组件
+
+再编写一个按钮，用来切换两个组件，按钮需要绑定一个方法`handleClick`,方法中使用了三元运算符来编写这部分内容
+
+
+
+```html
+methods:{
+    handleClick(){
+        this.showItem= this.showItem=='dajiao'?'liuying':'dajiao'
+    }
+},
+```
+
+![image-20230418195337056](vue.assets/image-20230418195337056.png)
+
+
+
+
+
+##### 动态组件优化代码
+
+使用`动态组件`的编程方式，就可以省略`v-show`部分的代码，也可以让代码看起来更加的优雅。
+
+```html
+<component :is="showItem" />
+```
+
+有了上面这段简短的代码，就可以删除掉下面这两句代码了。
+
+```html
+<dajiao  v-show="showItem==='dajiao'" />
+<liuying v-show="showItem==='liuying'" />
+```
+
+```html
+<script>
+    const app = Vue.createApp({
+        data(){
+            return {showItem:'dajiao'}
+        },
+        methods:{
+            handleClick(){
+                this.showItem = this.showItem=='dajiao'?'liuying':'dajiao'
+            }
+        },
+        template: ` 
+            <h2>欢迎光临红浪漫-请选择您的技师</h2> 
+            <component :is="showItem" />
+            <button @click="handleClick">切换佳丽</button>
+        `
+    })
+    app.component('dajiao',{
+        template:`<img src="https://newimg.jspang.com/xiedajiao01.jpg">`
+    })
+    app.component('liuying',{
+        template:`<img src="https://newimg.jspang.com/liuying01.jpg">`
+    })
+    const vm = app.mount("#app")
+</script>
+```
+
+
+
+##### 动态组件中的状态保存
+
+动态组件用起来非常方便，现在修改一下`dajiao`组件，把照片变成一个`input`框。
+
+到浏览器中查看，并在输入框中输入文字，在切换组件后。你会发现`input`框中的文字是无法保存的。
+
+为了保存`input`框中的文字，可以使用`<keep-alive>`标签，把动态组件包裹起来。
+
+![image-20230418195946015](vue.assets/image-20230418195946015.png)
+
+这时候就相当于启用了缓存，使用动态组件时，经常配合 `<keep-alive>` 标签一起使用
+
+
+
+#### 异步组件和Promise详解
+
+之前做的都是同步组件
+
+**异步组件就是在调用组件时，这个组件并不立即渲染，而是要等带一些业务逻辑完成后，才会进行执行组件内的逻辑和渲染到页面上。**
+
+
+
+```html
+app.component('async-component',Vue.defineAsyncComponent(()=>{
+    return new Promise((resolve,reject)=>{
+        setTimeout(()=>{
+            resolve({
+                template:`<div>这是一个异步组件</div>`
+            })
+        },3000)
+    })
+
+}))
+```
+
+这段代码中，新建了一个组件叫做`async-component`，然后用`defineAsyncComponent()`声明这是一个异步组件，在组件内部我们用`Promise`来完成逻辑。逻辑非常简单，用`setTimeout`控制3秒后渲染模板`template`，展示内容。也就是说3秒后，组件才知道最终展示的内容是什么。这就是一个典型的异步组件。
+
+异步组件经常在去后台请求数据的时候进行使用，也可以把一个大项目拆分成很多小的异步组件，然后根据需要，异步加载这些小项目。
+
+
+
+
+
+#### provide 和 inject多级组件传值
+
+需求是，要写一个子组件，然后子组件里调用另一个子组件（也可以想象成孙子组件），然后从最上层的父组件里传递值给子组件。
+
+
+
+```html
+<script>
+    const app = Vue.createApp({
+        data(){
+            return {house:'北京别墅一套'}
+        },
+        template: `<div>我有一套房子，我先传给我的儿子</div> `
+    })
+
+    app.component('child',{
+        template:`
+            <div>我是子组件，我要把房子再传给我儿子。</div>
+        `
+    })
+
+    app.component('child-child',{
+        template:`
+            <div>我是孙子，等待接收房子</div>
+        `
+    })
+    const vm = app.mount("#app")
+</script>
+```
+
+
+
+##### 常用传递方式
+
+现在的需求就是一层层传递下去，我们可以使用`props`的形式进行接收，然后继续传递，代码可以可成这样。
+
+```html
+<script>
+    const app = Vue.createApp({
+        data(){
+            return {house:'北京别墅一套'}
+        },
+        template: `
+            <div>我有一套房子，我先传给我的儿子</div>
+            <child :house="house" />
+         `
+    })
+
+    app.component('child',{
+        props:['house'],
+        template:`
+            <div>我是子组件，我要把房子再传给我儿子。</div>
+            <div>儿子接收{{house}}</div>
+            <child-child :house="house" />
+        `
+    })
+
+    app.component('child-child',{
+        props:['house'],
+        template:`
+            <div>我是孙子，等待接收房子</div>
+            <div>孙子接收{{house}}</div>
+        `
+    })
+    const vm = app.mount("#app")
+</script>
+```
+
+这时候到浏览器中查看一下结果，可以发现结果是可以成功的。每次用props接收，然后再用绑定属性的方式传递给下一层。
+
+
+
+现在需求变化了，富豪北京三环内还有一套200平方的房子，**不想通过儿子的手，直接传递给孙子**，那如何操作那？
+
+##### 多级组件传值provide和inject
+
+可以使用使用provide传递和inject接收了，先在数据项的下面声明一个`provide`。
+
+![image-20230418202343290](vue.assets/image-20230418202343290.png)
+
+儿子组件不用作任何更改，直接在孙子组件里用`inject`接收就可以了。
+
+![image-20230418202357286](vue.assets/image-20230418202357286.png)

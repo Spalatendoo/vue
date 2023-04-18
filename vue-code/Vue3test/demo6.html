@@ -14,12 +14,13 @@
     const app = Vue.createApp({ 
         data(){
             return{
-                message:'lk.com'
+                message:'lk.com' //在这里定义了一个数据 Model
             }
         },
-        template:"<h2>{{message}}</h2>"
+        template:"<h2>{{message}}</h2>"  //模板  View
+        // 定义后，View自动关联，vm
     }) //创建一个Vue实例
     const vm = app.mount("#app")
-    console.log(vm)
+    console.log(vm)  
 </script>
 </html>

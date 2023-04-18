@@ -18,7 +18,7 @@
                 message:'bilibili' ,
                 price:20,
                 count:2
-            
+        
                 
             }
         },
@@ -34,7 +34,7 @@
             },
             //只要页面重新渲染，就会重新执行方法
             getTotal(){
-                return Date.now()
+                return this.price * this.count
             },
             addCount(){
                 this.count++
